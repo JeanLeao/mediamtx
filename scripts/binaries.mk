@@ -1,5 +1,6 @@
 BINARY_NAME = mediamtx
 
+define DOCKERFILE_BINARIES
 FROM $(BASE_IMAGE) AS build-base
 RUN apk add --no-cache zip make git tar
 WORKDIR /s

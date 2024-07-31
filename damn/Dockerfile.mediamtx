@@ -1,0 +1,4 @@
+FROM alpine:3.19
+RUN apk add --no-cache ffmpeg
+ADD mediamtx__linux_amd64.tar.gz /
+ENTRYPOINT [ "/mediamtx" ]

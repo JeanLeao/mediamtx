@@ -126,7 +126,7 @@ authJWTJWKS:
 # Global settings -> Control API
 
 # Enable controlling the server through the Control API.
-api: no
+api: yes
 # Address of the Control API listener.
 apiAddress: :9997
 # Enable TLS/HTTPS on the Control API server.
@@ -149,7 +149,7 @@ apiTrustedProxies: []
 # Global settings -> Metrics
 
 # Enable Prometheus-compatible metrics.
-metrics: no
+metrics: yes
 # Address of the metrics HTTP listener.
 metricsAddress: :9998
 # Enable TLS/HTTPS on the Metrics server.
@@ -172,7 +172,7 @@ metricsTrustedProxies: []
 # Global settings -> PPROF
 
 # Enable pprof-compatible endpoint to monitor performances.
-pprof: no
+pprof: yes
 # Address of the pprof listener.
 pprofAddress: :9999
 # Enable TLS/HTTPS on the pprof server.
@@ -195,7 +195,7 @@ pprofTrustedProxies: []
 # Global settings -> Playback server
 
 # Enable downloading recordings from the playback server.
-playback: no
+playback: yes
 # Address of the playback server listener.
 playbackAddress: :9996
 # Enable TLS/HTTPS on the playback server.
@@ -462,9 +462,9 @@ pathDefaults:
   # MPEG-TS segments are concatenation of 188-bytes packets, flushed to disk with this period.
   # When a system failure occurs, the last part gets lost.
   # Therefore, the part duration is equal to the RPO (recovery point objective).
-  recordPartDuration: 1s
+  recordPartDuration: 1000ms
   # Minimum duration of each segment.
-  recordSegmentDuration: 1h
+  recordSegmentDuration: 10000ms
   # Delete segments after this timespan.
   # Set to 0s to disable automatic deletion.
   recordDeleteAfter: 24h
@@ -549,7 +549,7 @@ pathDefaults:
   rpiCameraROI:
   # whether to enable HDR on Raspberry Camera 3.
   rpiCameraHDR: false
-  # tuning file
+  # tuning file1
   rpiCameraTuningFile:
   # sensor mode, in format [width]:[height]:[bit-depth]:[packing]
   # bit-depth and packing are optional.
@@ -638,6 +638,7 @@ pathDefaults:
   # * MTX_SOURCE_TYPE: source type
   # * MTX_SOURCE_ID: source ID
   runOnReady:
+  # curl -X POST http://localhost:3000/exec -H "Content-Type: application/json" -d '{"command": "../codec.sh", "param": "mc2"}'
   # Restart the command if it exits.
   runOnReadyRestart: no
   # Command to run when the stream is not available anymore.
@@ -655,6 +656,7 @@ pathDefaults:
   # * MTX_READER_TYPE: reader type
   # * MTX_READER_ID: reader ID
   runOnRead:
+  # ./codec.sh $MTX_PATH
   # Restart the command if it exits.
   runOnReadRestart: no
   # Command to run when a client stops reading.
@@ -668,7 +670,7 @@ pathDefaults:
   # * G1, G2, ...: regular expression groups, if path name is
   #   a regular expression.
   # * MTX_SEGMENT_PATH: segment file path
-  runOnRecordSegmentCreate:
+  runOnRecordSegmentCreate: echo Segment created $MTX_SEGMENT_PATH
 
   # Command to run when a recording segment is complete.
   # The following environment variables are available:
@@ -678,7 +680,9 @@ pathDefaults:
   #   a regular expression.
   # * MTX_SEGMENT_PATH: segment file path
   # * MTX_SEGMENT_DURATION: segment duration
-  runOnRecordSegmentComplete:
+  runOnRecordSegmentComplete: curl http://127.0.0.1:9298/check_recorder?MTX_PATH=$MTX_PATH&MTX_SEGMENT_PATH=$MTX_SEGMENT_PATH
+
+
 
 ###############################################
 # Path settings
@@ -690,10 +694,29 @@ pathDefaults:
 # for example "~^(test1|test2)$" will match both "test1" and "test2",
 # for example "~^prefix" will match all paths that start with "prefix".
 paths:
-  # example:
-  # my_camera:
-  #   source: rtsp://my_camera
+  "~^codec_(.+)$":
+    runOnReady: echo Path $G1 ready
+    record: yes
+    recordPath: ./recordings/h264/%path/%Y-%m-%d_%H-%M-%S-%f
+    recordFormat: fmp4
+    recordPartDuration: 1000ms
+    recordSegmentDuration: 10000ms
+    recordDeleteAfter: 0s
+    # runOnRecordSegmentCreate: echo Segment created $MTX_SEGMENT_PATH
+    runOnRecordSegmentComplete: curl http://127.0.0.1:9298/check_recorder?path=$MTX_PATH&segment=$MTX_SEGMENT_PATH
 
-  # Settings under path "all_others" are applied to all paths that
-  # do not match another entry.
+
+  test: 
+    runOnInit: curl http://127.0.0.1:9298/reload/cams
+
   all_others:
+    runOnReady: curl http://192.168.88.176:3000/api/service/rtmp?conn_type=$MTX_PATH&teste=$MTX_QUERY&protocol=$MTX_SOURCE_TYPE&conn_id=$MTX_SOURCE_ID&action=$RTSP_PORT&ready=true
+    runOnReadyRestart: no
+    runOnNotReady: curl http://192.168.88.176:3000/api/service/rtmp?conn_type=$MTX_PATH&teste=$MTX_QUERY&protocol=$MTX_SOURCE_TYPE&conn_id=$MTX_SOURCE_ID&action=$RTSP_PORT&ready=false
+    record: yes
+    recordPath: ./recordings/h264/codec_%path/%Y-%m-%d_%H-%M-%S-%f
+    recordFormat: fmp4
+    recordPartDuration: 1000ms
+    recordSegmentDuration: 10000ms
+    recordDeleteAfter: 0s
+    runOnRecordSegmentComplete: curl http://127.0.0.1:9298/check_recorder?path=$MTX_PATH&segment=$MTX_SEGMENT_PATH

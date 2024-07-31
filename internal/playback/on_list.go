@@ -85,18 +85,31 @@ func computeDurationAndConcatenate(recordFormat conf.RecordFormat, segments []*S
 
 func (p *Server) onList(ctx *gin.Context) {
 	pathName := ctx.Query("path")
-
+	
 	if !p.doAuth(ctx, pathName) {
 		return
 	}
-
+	
 	pathConf, err := p.safeFindPathConf(pathName)
 	if err != nil {
 		p.writeError(ctx, http.StatusBadRequest, err)
 		return
 	}
+	
 
-	segments, err := FindSegments(pathConf, pathName)
+	start, err := time.Parse(time.RFC3339, ctx.Query("start"))
+	if err != nil {
+		p.writeError(ctx, http.StatusBadRequest, fmt.Errorf("invalid start: %w", err))
+		return
+	}
+
+	duration, err := parseDuration(ctx.Query("duration"))
+	if err != nil {
+		p.writeError(ctx, http.StatusBadRequest, fmt.Errorf("invalid duration: %w", err))
+		return
+	}
+
+	segments, err := findSegmentsInTimespan(pathConf, pathName, start, duration)
 	if err != nil {
 		if errors.Is(err, errNoSegmentsFound) {
 			p.writeError(ctx, http.StatusNotFound, err)

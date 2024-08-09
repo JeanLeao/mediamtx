@@ -450,7 +450,7 @@ pathDefaults:
   # Default path settings -> Record
 
   # Record streams to disk.
-  record: no
+  # record: no
   # Path of recording segments.
   # Extension is added automatically.
   # Available variables are %path (path name), %Y %m %d %H %M %S %f %s (time in strftime format)
@@ -464,10 +464,10 @@ pathDefaults:
   # Therefore, the part duration is equal to the RPO (recovery point objective).
   recordPartDuration: 1000ms
   # Minimum duration of each segment.
-  recordSegmentDuration: 10000ms
+  recordSegmentDuration: 10s
   # Delete segments after this timespan.
   # Set to 0s to disable automatic deletion.
-  recordDeleteAfter: 24h
+  recordDeleteAfter: 0s
 
   ###############################################
   # Default path settings -> Publisher source (when source is "publisher")
@@ -670,7 +670,7 @@ pathDefaults:
   # * G1, G2, ...: regular expression groups, if path name is
   #   a regular expression.
   # * MTX_SEGMENT_PATH: segment file path
-  runOnRecordSegmentCreate: echo Segment created $MTX_SEGMENT_PATH
+  runOnRecordSegmentComplete: curl http://127.0.0.1:4549/recording-webhook?device=$MTX_PATH&duration=$MTX_SEGMENT_DURATION&path=$MTX_SEGMENT_PATH
 
   # Command to run when a recording segment is complete.
   # The following environment variables are available:
@@ -680,8 +680,10 @@ pathDefaults:
   #   a regular expression.
   # * MTX_SEGMENT_PATH: segment file path
   # * MTX_SEGMENT_DURATION: segment duration
-  runOnRecordSegmentComplete: curl http://127.0.0.1:9298/check_recorder?MTX_PATH=$MTX_PATH&MTX_SEGMENT_PATH=$MTX_SEGMENT_PATH
+  # runOnRecordSegmentComplete: curl http://127.0.0.1:9298/check_recorder?MTX_PATH=$MTX_PATH&MTX_SEGMENT_PATH=$MTX_SEGMENT_PATH
 
+  # runOnRecordSegmentComplete: rclone sync -v --min-age=1ms $MTX_SEGMENT_PATH jean:/recordings/h264/$MTX_PATH
+ 
 
 
 ###############################################
@@ -700,11 +702,12 @@ paths:
     recordPath: ./recordings/h264/%path/%Y-%m-%d_%H-%M-%S-%f
     recordFormat: fmp4
     recordPartDuration: 1000ms
-    recordSegmentDuration: 10000ms
+    recordSegmentDuration: 5m
     recordDeleteAfter: 0s
-    # runOnRecordSegmentCreate: echo Segment created $MTX_SEGMENT_PATH
-    runOnRecordSegmentComplete: curl http://127.0.0.1:9298/check_recorder?path=$MTX_PATH&segment=$MTX_SEGMENT_PATH
+    runOnRecordSegmentComplete: curl http://127.0.0.1:4549/recording-webhook?device=$MTX_PATH&duration=$MTX_SEGMENT_DURATION&path=$MTX_SEGMENT_PATH
 
+    # runOnInit: rclone move -v ./recordings jean:/recordings
+    # runOnRecordSegmentComplete: rclone move -v --min-age=1ms $MTX_SEGMENT_PATH jean:/create/h264/recorder_$MTX_PATH
 
   test: 
     runOnInit: curl http://127.0.0.1:9298/reload/cams
@@ -717,6 +720,8 @@ paths:
     recordPath: ./recordings/h264/codec_%path/%Y-%m-%d_%H-%M-%S-%f
     recordFormat: fmp4
     recordPartDuration: 1000ms
-    recordSegmentDuration: 10000ms
+    recordSegmentDuration: 5m
     recordDeleteAfter: 0s
-    runOnRecordSegmentComplete: curl http://127.0.0.1:9298/check_recorder?path=$MTX_PATH&segment=$MTX_SEGMENT_PATH
+    runOnRecordSegmentComplete: curl http://127.0.0.1:4549/recording-webhook?device=$MTX_PATH&duration=$MTX_SEGMENT_DURATION&path=$MTX_SEGMENT_PATH
+    # runOnInit: rclone move -v ./recordings jean:/recordings
+    # runOnRecordSegmentComplete: rclone move -v --min-age=1ms $MTX_SEGMENT_PATH jean:/mika/h264/$MTX_PATH

@@ -175,7 +175,7 @@ func TestAgent(t *testing.T) {
 					}
 					segCreated <- struct{}{}
 				},
-				OnSegmentComplete: func(segPath string, du time.Duration) {
+				OnSegmentComplete: func(segPath string, du time.Duration, _ int64) {
 					switch n {
 					case 0:
 						require.Equal(t, filepath.Join(dir, "mypath", "2008-05-20_22-15-25-000000."+ext), segPath)

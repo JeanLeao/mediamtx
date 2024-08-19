@@ -1,6 +1,7 @@
 package record
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"time"
@@ -55,14 +56,22 @@ func (s *formatFMP4Segment) close() error {
 
 	if s.fi != nil {
 		s.f.a.agent.Log(logger.Debug, "closing segment %s", s.path)
+
+		stat, err1 := s.fi.Stat()
+		if err1 != nil {
+			err = err1
+		}
+
 		err2 := s.fi.Close()
 		if err == nil {
 			err = err2
 		}
 
 		if err2 == nil {
+			fmt.Print("Segment size: ", stat.Size(), " bytes\n")
 			duration := s.lastDTS - s.startDTS
-			s.f.a.agent.OnSegmentComplete(s.path, duration)
+
+			s.f.a.agent.OnSegmentComplete(s.path, duration, stat.Size())
 		}
 	}
 

@@ -670,8 +670,7 @@ pathDefaults:
   # * G1, G2, ...: regular expression groups, if path name is
   #   a regular expression.
   # * MTX_SEGMENT_PATH: segment file path
-  runOnRecordSegmentComplete: curl http://127.0.0.1:4549/recording-webhook?device=$MTX_PATH&duration=$MTX_SEGMENT_DURATION&path=$MTX_SEGMENT_PATH
-
+  runOnRecordSegmentComplete: sh -c 'printf "{\"device\":\"$MTX_PATH\",\"duration\":\"$MTX_SEGMENT_DURATION\",\"path\":\"$MTX_SEGMENT_PATH\",\"bytes\":\"$MTX_SEGMENT_SIZE\"}" | kafkacat -b localhost:9092 -t segments_channel -P -p 0'
   # Command to run when a recording segment is complete.
   # The following environment variables are available:
   # * MTX_PATH: path name
@@ -680,11 +679,13 @@ pathDefaults:
   #   a regular expression.
   # * MTX_SEGMENT_PATH: segment file path
   # * MTX_SEGMENT_DURATION: segment duration
+  # * MTX_SEGMENT_SIZE: segment size
   # runOnRecordSegmentComplete: curl http://127.0.0.1:9298/check_recorder?MTX_PATH=$MTX_PATH&MTX_SEGMENT_PATH=$MTX_SEGMENT_PATH
 
   # runOnRecordSegmentComplete: rclone sync -v --min-age=1ms $MTX_SEGMENT_PATH jean:/recordings/h264/$MTX_PATH
  
-
+# 66abfd2b96c48cd25ab58604/2024-08-09_14-42-28-393762.mp4
+# rclone delete jean:recordings/66abfd2b96c48cd25ab58604/2024-08-09_14-42-28-393762.mp4
 
 ###############################################
 # Path settings

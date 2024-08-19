@@ -30,6 +30,14 @@ func (s *formatMPEGTSSegment) close() error {
 
 	if s.fi != nil {
 		s.f.a.agent.Log(logger.Debug, "closing segment %s", s.path)
+
+		stat, err1 := s.fi.Stat()
+		if err1 != nil {
+			if err == nil {
+				err = err1
+			}
+		}
+
 		err2 := s.fi.Close()
 		if err == nil {
 			err = err2
@@ -37,7 +45,7 @@ func (s *formatMPEGTSSegment) close() error {
 
 		if err2 == nil {
 			duration := s.lastDTS - s.startDTS
-			s.f.a.agent.OnSegmentComplete(s.path, duration)
+			s.f.a.agent.OnSegmentComplete(s.path, duration, stat.Size())
 		}
 	}
 

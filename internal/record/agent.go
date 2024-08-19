@@ -12,7 +12,7 @@ import (
 type OnSegmentCreateFunc = func(path string)
 
 // OnSegmentCompleteFunc is the prototype of the function passed as OnSegmentComplete
-type OnSegmentCompleteFunc = func(path string, duration time.Duration)
+type OnSegmentCompleteFunc = func(path string, duration time.Duration, bytes int64)
 
 // Agent writes recordings to disk.
 type Agent struct {
@@ -42,7 +42,7 @@ func (w *Agent) Initialize() {
 		}
 	}
 	if w.OnSegmentComplete == nil {
-		w.OnSegmentComplete = func(string, time.Duration) {
+		w.OnSegmentComplete = func(string, time.Duration, int64) {
 		}
 	}
 	if w.restartPause == 0 {

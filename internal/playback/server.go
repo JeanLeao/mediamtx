@@ -3,6 +3,7 @@ package playback
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"net/http"
 	"sync"
@@ -24,19 +25,19 @@ type serverAuthManager interface {
 
 // Server is the playback server.
 type Server struct {
-	Address        string
-	Encryption     bool
-	ServerKey      string
-	ServerCert     string
-	AllowOrigin    string
-	TrustedProxies conf.IPNetworks
-	ReadTimeout    conf.StringDuration
-	PathConfs      map[string]*conf.Path
-	AuthManager    serverAuthManager
-	Parent         logger.Writer
-
-	httpServer *httpp.WrappedServer
-	mutex      sync.RWMutex
+	Address         string
+	Encryption      bool
+	ServerKey       string
+	ServerCert      string
+	AllowOrigin     string
+	TrustedProxies  conf.IPNetworks
+	ReadTimeout     conf.StringDuration
+	PathConfs       map[string]*conf.Path
+	AuthManager     serverAuthManager
+	Parent          logger.Writer
+	httpServer      *httpp.WrappedServer
+	mutex           sync.RWMutex
+	MicroServiceUrl string
 }
 
 // Initialize initializes Server.
@@ -46,6 +47,8 @@ func (s *Server) Initialize() error {
 
 	router.NoRoute(s.middlewareOrigin)
 	group := router.Group("/", s.middlewareOrigin)
+
+	fmt.Println("Server Initialize, s.MicroServiceUrl: ", s.MicroServiceUrl)
 
 	group.GET("/list", s.onList)
 	group.GET("/get", s.onGet)

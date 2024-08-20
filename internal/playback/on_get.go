@@ -175,7 +175,7 @@ func (p *Server) onGet(ctx *gin.Context) {
 	// 	return
 	// }
 
-	url := fmt.Sprintf("http://127.0.0.1:4549/api/v1/recording/list-without-concatenation?device=%s&start=%s&duration=%s", pathName, ctx.Query("start"), ctx.Query("duration"))
+	url := fmt.Sprintf("%s/api/v1/recording/list-without-concatenation?device=%s&start=%s&duration=%s", p.MicroServiceUrl, pathName, ctx.Query("start"), ctx.Query("duration"))
 	fmt.Println("URL:", url)
 	resp, err := http.Get(url)
 	if err != nil {

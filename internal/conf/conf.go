@@ -178,6 +178,9 @@ type Conf struct {
 	AuthHTTPExclude           AuthInternalUserPermissions `json:"authHTTPExclude"`
 	AuthJWTJWKS               string                      `json:"authJWTJWKS"`
 
+	//Micro Service
+	MicroServiceUrl string `json:"microServiceUrl"`
+
 	// Control API
 	API               bool       `json:"api"`
 	APIAddress        string     `json:"apiAddress"`
@@ -323,6 +326,8 @@ func (conf *Conf) setDefaults() {
 			Action: AuthActionPprof,
 		},
 	}
+	//microService
+	conf.MicroServiceUrl = "http://127.0.0.1:4549/"
 
 	// Control API
 	conf.APIAddress = ":9997"
@@ -501,6 +506,13 @@ func (conf *Conf) Validate() error {
 	}
 	if conf.UDPMaxPayloadSize > 1472 {
 		return fmt.Errorf("'udpMaxPayloadSize' must be less than 1472")
+	}
+
+	//microService
+	if conf.MicroServiceUrl != "" &&
+		!strings.HasPrefix(conf.MicroServiceUrl, "http://") &&
+		!strings.HasPrefix(conf.MicroServiceUrl, "https://") {
+		return fmt.Errorf("'microServiceUrl' must be a HTTP URL")
 	}
 
 	// Authentication

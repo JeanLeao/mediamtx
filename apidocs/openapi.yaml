@@ -50,6 +50,10 @@ components:
         runOnDisconnect:
           type: string
 
+        #MicroServices
+        microServiceUrl:
+          type: string
+
         # Control API
         api:
           type: boolean

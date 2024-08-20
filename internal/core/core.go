@@ -345,16 +345,17 @@ func (p *Core) createResources(initial bool) error {
 	if p.conf.Playback &&
 		p.playbackServer == nil {
 		i := &playback.Server{
-			Address:        p.conf.PlaybackAddress,
-			Encryption:     p.conf.PlaybackEncryption,
-			ServerKey:      p.conf.PlaybackServerKey,
-			ServerCert:     p.conf.PlaybackServerCert,
-			AllowOrigin:    p.conf.PlaybackAllowOrigin,
-			TrustedProxies: p.conf.PlaybackTrustedProxies,
-			ReadTimeout:    p.conf.ReadTimeout,
-			PathConfs:      p.conf.Paths,
-			AuthManager:    p.authManager,
-			Parent:         p,
+			Address:         p.conf.PlaybackAddress,
+			Encryption:      p.conf.PlaybackEncryption,
+			ServerKey:       p.conf.PlaybackServerKey,
+			ServerCert:      p.conf.PlaybackServerCert,
+			AllowOrigin:     p.conf.PlaybackAllowOrigin,
+			TrustedProxies:  p.conf.PlaybackTrustedProxies,
+			ReadTimeout:     p.conf.ReadTimeout,
+			PathConfs:       p.conf.Paths,
+			AuthManager:     p.authManager,
+			Parent:          p,
+			MicroServiceUrl: p.conf.MicroServiceUrl,
 		}
 		err = i.Initialize()
 		if err != nil {

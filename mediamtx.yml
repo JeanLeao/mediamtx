@@ -125,6 +125,7 @@ authJWTJWKS:
 ###############################################
 # Global settings -> Control API
 
+microServiceUrl: http://127.0.0.1:4549/
 # Enable controlling the server through the Control API.
 api: yes
 # Address of the Control API listener.
